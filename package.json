@@ -1,6 +1,6 @@
 {
   "name": "@1onlinesolution/dws-mongodb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "MongoDB utilities for the Web",
   "main": "index.js",
   "repository": {
