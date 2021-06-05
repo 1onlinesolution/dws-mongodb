@@ -1,0 +1,5 @@
+# Ignore vendor files:
+public/vendor/**/*.js
+
+# Ignore all minified Javascript files:
+*.min.js

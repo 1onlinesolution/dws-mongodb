@@ -1,0 +1,80 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# https://docs.github.com/en/actions/guides/building-and-testing-nodejs
+# https://docs.github.com/en/actions/guides/about-packaging-with-github-actions
+# https://docs.github.com/en/actions/guides/publishing-nodejs-packages
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    # Configures job to run on Linux, using the GitHub-hosted ubuntu-latest runners
+    runs-on: ubuntu-latest
+
+    # Matrix strategy that builds and tests the code with four Node.js versions: 10.x, 12.x, 14.x, and 15.x.
+    # The 'x' is a wildcard character that matches the latest minor and patch release available for a version.
+    # Each version of Node.js specified in the node-version array creates a job that runs the same steps.
+    # Each job can access the value defined in the matrix node-version array using the matrix context.
+    # The setup-node action uses the context as the node-version input.
+    # The setup-node action configures each job with a different Node.js version before building and testing code.
+    strategy:
+      matrix:
+        node-version: [14.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        always-auth: true
+        registry-url: https://registry.npmjs.org
+        scope: '@1onlinesolution'
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+      env:
+        ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
+        EMAIL_HOST: ${{secrets.EMAIL_HOST}}
+        EMAIL_USERNAME: ${{secrets.EMAIL_USERNAME}}
+        JWT_ALGORITHM: ${{secrets.JWT_ALGORITHM}}
+        JWT_EXPIRATION_ACCESS_TOKEN: ${{secrets.JWT_EXPIRATION_ACCESS_TOKEN}}
+        JWT_EXPIRATION_REFRESH_TOKEN: ${{secrets.JWT_EXPIRATION_REFRESH_TOKEN}}
+        JWT_ACCESS_TOKEN_SECRET_KEY: ${{secrets.JWT_ACCESS_TOKEN_SECRET_KEY}}
+        JWT_REFRESH_TOKEN_SECRET_KEY: ${{secrets.JWT_REFRESH_TOKEN_SECRET_KEY}}
+
+#  publish-gpr:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: actions/setup-node@v2
+#        with:
+#          node-version: '14.x'
+#          registry-url: https://npm.pkg.github.com/
+#      - run: npm ci
+#      - run: npm publish
+#        env:
+#          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
