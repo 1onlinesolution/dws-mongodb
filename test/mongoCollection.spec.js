@@ -1,5 +1,4 @@
 const assert = require('assert');
-const MongoConnection = require('../lib/mongoConnection');
 const MongoCollection = require('../lib/mongoCollection');
 const MongoDatabase = require('../lib/mongoDatabase');
 
@@ -8,8 +7,7 @@ describe('MongoCollection', () => {
     const connectionString = 'my connection string';
     const dbName = 'my database';
     const collName = 'my collection';
-    const conn = new MongoConnection(connectionString);
-    const database = new MongoDatabase(conn, dbName);
+    const database = new MongoDatabase(connectionString, dbName);
     const collection = new MongoCollection(database, collName);
     assert(collection !== null);
     assert(typeof collection === 'object');
